@@ -1,4 +1,4 @@
-use super::token::{BaseKind, classify_base};
+use super::token::{classify_base, BaseKind};
 
 use std::{borrow::Cow, hash::Hash};
 
@@ -27,7 +27,7 @@ mod tests {
     use super::*;
     use crate::lexer::config::Config;
     use crate::lexer::inline::LexerInline;
-    use crate::lexer::token::{BaseKind, TokenKind, Token, classify_base};
+    use crate::lexer::token::{classify_base, BaseKind, Token, TokenKind};
     use std::borrow::Cow;
 
     #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -43,10 +43,22 @@ mod tests {
 
         fn classify(&self, c: char) -> (BaseKind, Option<MyCustom>, Option<Cow<'static, str>>) {
             match c {
-                '\t' => (BaseKind::Space, Some(MyCustom::Tab), Some(Cow::Borrowed("<TAB>"))),
-                '7'  => (BaseKind::Number, Some(MyCustom::Seven), Some(Cow::Owned("SEVEN".into()))),
-                'a'  => (BaseKind::Word, Some(MyCustom::LetterA), Some(Cow::Borrowed("A"))),
-                _    => (classify_base(c), None, None),
+                '\t' => (
+                    BaseKind::Space,
+                    Some(MyCustom::Tab),
+                    Some(Cow::Borrowed("<TAB>")),
+                ),
+                '7' => (
+                    BaseKind::Number,
+                    Some(MyCustom::Seven),
+                    Some(Cow::Owned("SEVEN".into())),
+                ),
+                'a' => (
+                    BaseKind::Word,
+                    Some(MyCustom::LetterA),
+                    Some(Cow::Borrowed("A")),
+                ),
+                _ => (classify_base(c), None, None),
             }
         }
     }
@@ -59,11 +71,31 @@ mod tests {
         let tokens: Vec<_> = LexerInline::new(&cfg, &cls, input).collect();
 
         let expected = vec![
-            Token { text: Cow::Borrowed("A"), kind: TokenKind::new(BaseKind::Word, Some(MyCustom::LetterA)), start: 0 },
-            Token { text: Cow::Owned("<TAB>".into()), kind: TokenKind::new(BaseKind::Space, Some(MyCustom::Tab)), start: 1},
-            Token { text: Cow::Owned("SEVEN".into()), kind: TokenKind::new(BaseKind::Number, Some(MyCustom::Seven)), start: 2 },
-            Token { text: Cow::Borrowed("!"), kind: TokenKind::SYMBOL, start: 3 },
-            Token { text: Cow::Borrowed("x"), kind: TokenKind::WORD, start: 4 },
+            Token {
+                text: Cow::Borrowed("A"),
+                kind: TokenKind::new(BaseKind::Word, Some(MyCustom::LetterA)),
+                start: 0,
+            },
+            Token {
+                text: Cow::Owned("<TAB>".into()),
+                kind: TokenKind::new(BaseKind::Space, Some(MyCustom::Tab)),
+                start: 1,
+            },
+            Token {
+                text: Cow::Owned("SEVEN".into()),
+                kind: TokenKind::new(BaseKind::Number, Some(MyCustom::Seven)),
+                start: 2,
+            },
+            Token {
+                text: Cow::Borrowed("!"),
+                kind: TokenKind::SYMBOL,
+                start: 3,
+            },
+            Token {
+                text: Cow::Borrowed("x"),
+                kind: TokenKind::WORD,
+                start: 4,
+            },
         ];
 
         assert_eq!(tokens, expected);
@@ -77,9 +109,21 @@ mod tests {
         let tokens: Vec<_> = LexerInline::new(&cfg, &cls, input).collect();
 
         let expected = vec![
-            Token { text: Cow::Borrowed("abc"), kind: TokenKind::WORD, start: 0},
-            Token { text: Cow::Borrowed("123"), kind: TokenKind::NUMBER, start: 4},
-            Token { text: Cow::Borrowed("!"), kind: TokenKind::SYMBOL, start: 7},
+            Token {
+                text: Cow::Borrowed("abc"),
+                kind: TokenKind::WORD,
+                start: 0,
+            },
+            Token {
+                text: Cow::Borrowed("123"),
+                kind: TokenKind::NUMBER,
+                start: 4,
+            },
+            Token {
+                text: Cow::Borrowed("!"),
+                kind: TokenKind::SYMBOL,
+                start: 7,
+            },
         ];
 
         assert_eq!(tokens, expected);
@@ -101,8 +145,16 @@ mod tests {
         let tokens: Vec<_> = LexerInline::new(&cfg, &cls, input).collect();
 
         let expected = vec![
-            Token { text: Cow::Borrowed("abc"), kind: TokenKind::WORD, start: 0},
-            Token { text: Cow::Borrowed("!"), kind: TokenKind::SYMBOL, start: 3},
+            Token {
+                text: Cow::Borrowed("abc"),
+                kind: TokenKind::WORD,
+                start: 0,
+            },
+            Token {
+                text: Cow::Borrowed("!"),
+                kind: TokenKind::SYMBOL,
+                start: 3,
+            },
         ];
 
         assert_eq!(tokens, expected);
@@ -116,8 +168,16 @@ mod tests {
         let tokens: Vec<_> = LexerInline::new(&cfg, &cls, input).collect();
 
         let expected = vec![
-            Token { text: Cow::Borrowed("!!"), kind: TokenKind::SYMBOL, start: 0},
-            Token { text: Cow::Owned("SEVEN".into()), kind: TokenKind::new(BaseKind::Number, Some(MyCustom::Seven)), start: 2},
+            Token {
+                text: Cow::Borrowed("!!"),
+                kind: TokenKind::SYMBOL,
+                start: 0,
+            },
+            Token {
+                text: Cow::Owned("SEVEN".into()),
+                kind: TokenKind::new(BaseKind::Number, Some(MyCustom::Seven)),
+                start: 2,
+            },
         ];
 
         assert_eq!(tokens, expected);

@@ -16,19 +16,29 @@ impl<TK: Copy + Eq + Hash> Default for Config<TK> {
         let mut skip_base = HashSet::new();
         skip_base.insert(BaseKind::Space);
 
-        Self { skip_base, skip_custom: HashSet::new(), group_symbols: false }
+        Self {
+            skip_base,
+            skip_custom: HashSet::new(),
+            group_symbols: false,
+        }
     }
 }
 
 impl<TK: Copy + Eq + Hash> Config<TK> {
     #[inline]
-    pub fn skip_base<IT>(mut self, kinds: IT) -> Self where IT: IntoIterator<Item = BaseKind> {
+    pub fn skip_base<IT>(mut self, kinds: IT) -> Self
+    where
+        IT: IntoIterator<Item = BaseKind>,
+    {
         self.skip_base.extend(kinds);
         self
     }
-    
+
     #[inline]
-    pub fn skip_custom<IT>(mut self, kinds: IT) -> Self where IT: IntoIterator<Item = TK> {
+    pub fn skip_custom<IT>(mut self, kinds: IT) -> Self
+    where
+        IT: IntoIterator<Item = TK>,
+    {
         self.skip_custom.extend(kinds.into_iter().map(Some));
         self
     }

@@ -1,15 +1,15 @@
-use super::token::{BaseKind, TokenKind, Token};
 use super::classifier::Classifier;
 use super::config::Config;
+use super::token::{BaseKind, Token, TokenKind};
 
 use std::{borrow::Cow, hash::Hash, str::CharIndices};
 
 pub struct LexerInline<'a, TK, CL>
-where 
+where
     TK: Copy + Eq + Hash,
     CL: Classifier<Custom = TK>,
 {
-    config:     &'a Config<TK>,
+    config: &'a Config<TK>,
     classifier: &'a CL,
 
     input: &'a str,
@@ -17,13 +17,18 @@ where
 }
 
 impl<'a, TK, CL> LexerInline<'a, TK, CL>
-where 
+where
     TK: Copy + Eq + Hash,
-    CL: Classifier<Custom = TK>, 
+    CL: Classifier<Custom = TK>,
 {
     #[inline]
     pub fn new(config: &'a Config<TK>, classifier: &'a CL, input: &'a str) -> Self {
-        LexerInline { config, classifier, input, pos: 0 }
+        LexerInline {
+            config,
+            classifier,
+            input,
+            pos: 0,
+        }
     }
 
     #[inline]
@@ -32,15 +37,18 @@ where
             let start = self.pos;
 
             let mut i = self.input[self.pos..].char_indices();
-            let(_, ch) = i.next().unwrap();
+            let (_, ch) = i.next().unwrap();
             self.pos += ch.len_utf8();
-            
+
             let (bk, ck, repl) = self.classifier.classify(ch);
             let kind = TokenKind::new(bk, ck);
-            
 
             if let Some(repl) = repl {
-                return Some(Token { text: Cow::Owned(repl.into_owned()), kind, start});
+                return Some(Token {
+                    text: Cow::Owned(repl.into_owned()),
+                    kind,
+                    start,
+                });
             }
             if self.config.should_skip(bk, ck) {
                 self.consume_while(bk, ck, &mut i);
@@ -50,7 +58,11 @@ where
                 self.consume_while(bk, ck, &mut i);
             }
 
-            return Some(Token { text: Cow::Borrowed(&self.input[start..self.pos]), start, kind});
+            return Some(Token {
+                text: Cow::Borrowed(&self.input[start..self.pos]),
+                start,
+                kind,
+            });
         }
 
         None
@@ -60,33 +72,41 @@ where
     fn consume_while(&mut self, base: BaseKind, custom: Option<TK>, i: &mut CharIndices) {
         while let Some((_, ch)) = i.next() {
             let (bk, ck, repl) = self.classifier.classify(ch);
-            if repl.is_some() || bk != base || ck != custom { break; }
+            if repl.is_some() || bk != base || ck != custom {
+                break;
+            }
             self.pos += ch.len_utf8();
         }
     }
 }
 
 impl<'a, TK, CL> Iterator for LexerInline<'a, TK, CL>
-where 
+where
     TK: Copy + Eq + Hash,
-    CL: Classifier<Custom = TK>, 
+    CL: Classifier<Custom = TK>,
 {
     type Item = Token<'a, TK>;
 
     #[inline]
-    fn next(&mut self) -> Option<Self::Item> { self.next_token() }
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next_token()
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lexer::token::{BaseKind, classify_base};
     use crate::lexer::classifier::DefaultClassifier;
     use crate::lexer::config::Config;
+    use crate::lexer::token::{classify_base, BaseKind};
     use std::borrow::Cow;
 
     #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-    enum MyCustom { Tab, Seven, LetterA }
+    enum MyCustom {
+        Tab,
+        Seven,
+        LetterA,
+    }
 
     struct MyClassifier;
     impl Classifier for MyClassifier {
@@ -94,10 +114,22 @@ mod tests {
 
         fn classify(&self, c: char) -> (BaseKind, Option<MyCustom>, Option<Cow<'static, str>>) {
             match c {
-                '\t'    => (BaseKind::Space,  Some(MyCustom::Tab),    Some(Cow::Borrowed("<TAB>"))),
-                '7'     => (BaseKind::Number, Some(MyCustom::Seven),  Some(Cow::Owned("SEVEN".into()))),
-                'a'     => (BaseKind::Word,   Some(MyCustom::LetterA),Some(Cow::Borrowed("A"))),
-                _       => (classify_base(c), None,                   None),
+                '\t' => (
+                    BaseKind::Space,
+                    Some(MyCustom::Tab),
+                    Some(Cow::Borrowed("<TAB>")),
+                ),
+                '7' => (
+                    BaseKind::Number,
+                    Some(MyCustom::Seven),
+                    Some(Cow::Owned("SEVEN".into())),
+                ),
+                'a' => (
+                    BaseKind::Word,
+                    Some(MyCustom::LetterA),
+                    Some(Cow::Borrowed("A")),
+                ),
+                _ => (classify_base(c), None, None),
             }
         }
     }
@@ -116,7 +148,9 @@ mod tests {
 
     #[test]
     fn test_skipping_tab_custom() {
-        let cfg = Config::default().skip_custom([MyCustom::Tab]).with_grouped_symbols();
+        let cfg = Config::default()
+            .skip_custom([MyCustom::Tab])
+            .with_grouped_symbols();
         let cls = MyClassifier;
         let input = "a\t\t7!!b";
         let out: Vec<_> = LexerInline::new(&cfg, &cls, input).collect();

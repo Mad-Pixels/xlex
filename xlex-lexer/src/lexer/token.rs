@@ -6,7 +6,7 @@ use std::{borrow::Cow, hash::Hash};
 pub struct Token<'a, TK: Copy + Eq + Hash> {
     pub kind: TokenKind<TK>,
     pub text: Cow<'a, str>,
-    
+
     pub start: usize,
 }
 
@@ -25,24 +25,39 @@ pub struct TokenKind<TK: Copy + Eq + Hash> {
 }
 
 impl<TK: Copy + Eq + Hash> TokenKind<TK> {
-    pub const NUMBER: Self = Self { base: BaseKind::Number, custom: None };
-    pub const SYMBOL: Self = Self { base: BaseKind::Symbol, custom: None };
-    pub const SPACE: Self = Self { base: BaseKind::Space, custom: None };
-    pub const WORD: Self = Self { base: BaseKind::Word, custom: None };
+    pub const NUMBER: Self = Self {
+        base: BaseKind::Number,
+        custom: None,
+    };
+    pub const SYMBOL: Self = Self {
+        base: BaseKind::Symbol,
+        custom: None,
+    };
+    pub const SPACE: Self = Self {
+        base: BaseKind::Space,
+        custom: None,
+    };
+    pub const WORD: Self = Self {
+        base: BaseKind::Word,
+        custom: None,
+    };
 
     #[inline]
-    pub fn new(base: BaseKind, custom: Option<TK>) -> Self { Self { custom, base } }
+    pub fn new(base: BaseKind, custom: Option<TK>) -> Self {
+        Self { custom, base }
+    }
 
     #[inline]
     pub fn matches(&self, c: char, classifier: &impl Classifier<Custom = TK>) -> bool {
         is_match(self.base, self.custom, c, classifier)
     }
 
-    pub fn predicate<'a>(&'a self, classifier: &'a impl Classifier<Custom = TK>) -> impl Fn(char) -> bool + 'a{
+    pub fn predicate<'a>(
+        &'a self,
+        classifier: &'a impl Classifier<Custom = TK>,
+    ) -> impl Fn(char) -> bool + 'a {
         move |ch| is_match(self.base, self.custom, ch, classifier)
     }
-
-    
 }
 
 #[inline]
@@ -60,8 +75,8 @@ pub fn classify_base(c: char) -> BaseKind {
 
 #[inline]
 fn is_match<TK: Copy + Eq + Hash>(
-    base: BaseKind, 
-    custom: Option<TK>, 
+    base: BaseKind,
+    custom: Option<TK>,
     ch: char,
     classifier: &impl Classifier<Custom = TK>,
 ) -> bool {
@@ -75,7 +90,11 @@ mod tests {
     use std::borrow::Cow;
 
     #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-    enum MyCustom { Tab, Newline, Char7 }
+    enum MyCustom {
+        Tab,
+        Newline,
+        Char7,
+    }
 
     struct TestClassifier;
     impl Classifier for TestClassifier {
@@ -85,8 +104,8 @@ mod tests {
             match c {
                 '\t' => (BaseKind::Space, Some(MyCustom::Tab), None),
                 '\n' => (BaseKind::Space, Some(MyCustom::Newline), None),
-                '7'  => (BaseKind::Number, Some(MyCustom::Char7), None),
-                _    => (classify_base(c), None, None),
+                '7' => (BaseKind::Number, Some(MyCustom::Char7), None),
+                _ => (classify_base(c), None, None),
             }
         }
     }
@@ -118,7 +137,7 @@ mod tests {
         let pred = kind.predicate(&cls);
         assert!(pred('7'));
         assert!(!pred('8'));
-        assert!(!pred('a')); 
+        assert!(!pred('a'));
     }
 
     #[test]
