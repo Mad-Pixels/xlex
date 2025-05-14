@@ -1,0 +1,16 @@
+[package]
+name = "xlex-lexer"
+description = "Fast and composable lexer for Rust"
+
+version = "0.0.1"
+edition = "2024"
+
+authors = ["Igor Chelyshkin <igor.chelyshkin@madpixels.io>"]
+repository = "https://github.com/Mad-Pixels/xlex"
+license = "MIT OR Apache-2.0"
+
+readme = "../README.md"
+categories = ["parsing", "text-processing"]
+keywords = ["lexer", "tokenizer", "parsing"]
+
+[dependencies]
