@@ -14,3 +14,10 @@ categories = ["parsing", "text-processing"]
 keywords = ["lexer", "tokenizer", "parsing"]
 
 [dependencies]
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "lexer_inline"
+harness = false
