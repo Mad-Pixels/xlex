@@ -1,6 +1,6 @@
 [package]
 name = "xlex-lexer"
-description = "Fast and composable lexer for Rust"
+description = "Composable lexer for Rust"
 
 version = "0.0.1"
 edition = "2024"
@@ -20,4 +20,8 @@ criterion = "0.5"
 
 [[bench]]
 name = "lexer_inline"
+harness = false
+
+[[bench]]
+name = "lexer_stream"
 harness = false
